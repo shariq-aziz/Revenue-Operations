@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RevOps Intelligence Dashboard | Shariq Aziz</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0d0f14;
+  --surface: #13161e;
+  --surface2: #1a1e29;
+  --border: #232838;
+  --accent: #4f8ef7;
+  --accent2: #6ee7b7;
+  --accent3: #f97316;
+  --accent4: #a78bfa;
+  --warn: #fb923c;
+  --red: #f87171;
+  --text: #e8eaf0;
+  --muted: #6b7280;
+  --muted2: #9ca3af;
+  --font-mono: 'DM Mono', monospace;
+  --font-sans: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRID BG ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: 220px;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  padding: 0;
+}
+
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.logo-dot {
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.sidebar-label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 20px 20px 8px;
+  font-family: var(--font-mono);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted2);
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+  font-weight: 500;
+}
+
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(79,142,247,0.06); }
+
+.nav-icon { font-size: 14px; width: 18px; text-align: center; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-footer a {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+}
+.sidebar-footer a:hover { color: var(--accent); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: 220px;
+  position: relative;
+  z-index: 1;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(13,15,20,0.8);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-left h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.topbar-left p {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge-green { background: rgba(110,231,183,0.12); color: var(--accent2); border: 1px solid rgba(110,231,183,0.25); }
+.badge-blue { background: rgba(79,142,247,0.12); color: var(--accent); border: 1px solid rgba(79,142,247,0.25); }
+
+.tab-bar {
+  display: flex;
+  gap: 0;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.tab {
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── VIEWS ── */
+.view { display: none; padding: 28px 32px; }
+.view.active { display: block; }
+
+/* ── KPI CARDS ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  animation: fadeUp 0.4s ease both;
+}
+
+.kpi-card:hover { border-color: rgba(79,142,247,0.4); }
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.kpi-card.blue::before { background: linear-gradient(90deg, var(--accent), transparent); }
+.kpi-card.green::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+.kpi-card.orange::before { background: linear-gradient(90deg, var(--warn), transparent); }
+.kpi-card.purple::before { background: linear-gradient(90deg, var(--accent4), transparent); }
+
+.kpi-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  margin-bottom: 10px;
+}
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+}
+
+.kpi-sub {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kpi-delta-up { color: var(--accent2); }
+.kpi-delta-down { color: var(--red); }
+.kpi-context { color: var(--muted); }
+
+/* ── CHART AREA ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.chart-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+  font-family: var(--font-mono);
+}
+
+/* ── SVG CHARTS ── */
+.chart-svg { width: 100%; overflow: visible; }
+
+/* ── FUNNEL ── */
+.funnel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* ── TABLE ── */
+.data-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.table-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-title { font-size: 13px; font-weight: 600; }
+
+table { width: 100%; border-collapse: collapse; }
+
+th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+
+td {
+  padding: 11px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: var(--muted2);
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(79,142,247,0.04); color: var(--text); }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+}
+
+.status-won { background: rgba(110,231,183,0.12); color: var(--accent2); }
+.status-lost { background: rgba(248,113,113,0.12); color: var(--red); }
+.status-open { background: rgba(79,142,247,0.12); color: var(--accent); }
+.status-nurture { background: rgba(251,146,60,0.1); color: var(--warn); }
+
+/* ── MINI BARS ── */
+.mini-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.mini-bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 2px; }
+.mini-bar-fill { height: 4px; border-radius: 2px; background: var(--accent); }
+
+/* ── PROCESS VIEW ── */
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.process-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 22px;
+  animation: fadeUp 0.4s ease both;
+}
+
+.process-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.process-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.process-step:last-child { border-bottom: none; }
+
+.step-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(79,142,247,0.15);
+  color: var(--accent);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.step-body { flex: 1; }
+.step-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.step-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ── PROGRAM TRACKER ── */
+.program-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.program-row:last-child { border-bottom: none; }
+
+.program-name { font-size: 13px; font-weight: 500; color: var(--text); min-width: 180px; }
+.program-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; }
+.program-bar-fill { height: 6px; border-radius: 3px; transition: width 1s ease; }
+.program-pct { font-family: var(--font-mono); font-size: 12px; color: var(--muted2); min-width: 36px; text-align: right; }
+.program-status { min-width: 80px; text-align: right; }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.section-tag {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── ARR WATERFALL ── */
+.waterfall-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.wf-label { font-size: 12px; color: var(--muted2); min-width: 130px; font-family: var(--font-mono); }
+.wf-bar-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+.wf-offset { background: transparent; }
+.wf-seg { height: 20px; border-radius: 2px; }
+.wf-value { font-size: 12px; font-family: var(--font-mono); min-width: 60px; text-align: right; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── FILTER ROW ── */
+.filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted2);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.04em;
+}
+
+.filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.filter-btn.active { background: rgba(79,142,247,0.12); border-color: var(--accent); color: var(--accent); }
+
+/* ── LEGEND ── */
+.legend { display: flex; gap: 16px; align-items: center; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── TOOLTIP ── */
+.tooltip {
+  position: absolute;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 1000;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+/* ── SCENARIO ── */
+.scenario-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+.input-label { font-size: 11px; font-family: var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.input-wrap { position: relative; }
+.input-prefix { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 12px; font-family: var(--font-mono); }
+.styled-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px 8px 24px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.styled-input:focus { border-color: var(--accent); }
+.styled-input[type="range"] { padding: 10px 4px; background: transparent; border: none; cursor: pointer; }
+.styled-input[type="range"] { -webkit-appearance: none; height: 4px; background: var(--border); border-radius: 2px; }
+.styled-input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+
+.scenario-results {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.scenario-result-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.sr-label { font-size: 10px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.sr-value { font-size: 22px; font-family: var(--font-mono); font-weight: 600; color: var(--text); }
+.sr-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ── NOTES CARD ── */
+.methodology-card {
+  background: rgba(79,142,247,0.04);
+  border: 1px solid rgba(79,142,247,0.2);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-top: 24px;
+}
+.methodology-title { font-size: 11px; font-family: var(--font-mono); color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.methodology-list { list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 24px; }
+.methodology-list li { font-size: 12px; color: var(--muted2); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+.methodology-list li::before { content: '→'; color: var(--accent); font-family: var(--font-mono); flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="tooltip" id="tooltip"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge"><div class="logo-dot"></div>REVOPS INTEL</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--font-mono);">Q2 2026 · B2B SaaS</div>
+  </div>
+  <div class="sidebar-label">Analytics</div>
+  <div class="nav-item active" onclick="switchNav(this,'overview')"><span class="nav-icon">◈</span>Executive Overview</div>
+  <div class="nav-item" onclick="switchNav(this,'funnel')"><span class="nav-icon">◇</span>Sales Funnel</div>
+  <div class="nav-item" onclick="switchNav(this,'arr')"><span class="nav-icon">⬡</span>ARR & Cohorts</div>
+  <div class="nav-item" onclick="switchNav(this,'scenario')"><span class="nav-icon">⊹</span>Scenario Planner</div>
+  <div class="sidebar-label">Operations</div>
+  <div class="nav-item" onclick="switchNav(this,'programs')"><span class="nav-icon">◫</span>GTM Programs</div>
+  <div class="nav-item" onclick="switchNav(this,'process')"><span class="nav-icon">⊞</span>Process Playbooks</div>
+  <div class="sidebar-footer">
+    <a href="https://github.com/shariq-aziz" target="_blank">github.com/shariq-aziz</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Revenue Operations Dashboard</h1>
+      <p>Working Student RevOps Portfolio · Shariq Aziz</p>
+    </div>
+    <div class="topbar-right">
+      <span class="badge badge-green">● Live</span>
+      <span class="badge badge-blue">Q2 2026</span>
+    </div>
+  </div>
+
+  <div class="tab-bar" id="tab-bar">
+    <div class="tab active" onclick="switchTab(this,'overview')">Overview</div>
+    <div class="tab" onclick="switchTab(this,'funnel')">Sales Funnel</div>
+    <div class="tab" onclick="switchTab(this,'arr')">ARR & Cohorts</div>
+    <div class="tab" onclick="switchTab(this,'scenario')">Scenario Planner</div>
+    <div class="tab" onclick="switchTab(this,'programs')">GTM Programs</div>
+    <div class="tab" onclick="switchTab(this,'process')">Playbooks</div>
+  </div>
+
+  <!-- ═══════════════ OVERVIEW ═══════════════ -->
+  <div class="view active" id="view-overview">
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-label">ARR (Annual)</div>
+        <div class="kpi-value" id="kpi-arr">€4.2M</div>
+        <div class="kpi-sub"><span class="kpi-delta-up">↑ 23%</span><span class="kpi-context">vs Q1 2026</span></div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Win Rate</div>
+        <div class="kpi-value">34%</div>
+        <div class="kpi-sub"><span class="kpi-delta-up">↑ 6pp</span><span class="kpi-context">vs Q4 2025</span></div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-label">Pipeline Velocity</div>
+        <div class="kpi-value">€18.4K</div>
+        <div class="kpi-sub"><span class="kpi-context">per day · avg deal</span></div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">CAC Payback</div>
+        <div class="kpi-value">11mo</div>
+        <div class="kpi-sub"><span class="kpi-delta-up">↓ 2mo</span><span class="kpi-context">improvement</span></div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <!-- ARR TREND -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Quarterly ARR Growth</div>
+            <div class="chart-subtitle">New ARR + Expansion ARR + Churn</div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>New ARR</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>Expansion</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Churn</div>
+          </div>
+        </div>
+        <svg class="chart-svg" viewBox="0 0 520 180" id="arr-chart">
+          <defs>
+            <linearGradient id="gNew" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#4f8ef7" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#4f8ef7" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="gExp" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#6ee7b7" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#6ee7b7" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Grid lines -->
+          <line x1="0" y1="150" x2="520" y2="150" stroke="#232838" stroke-width="1"/>
+          <line x1="0" y1="110" x2="520" y2="110" stroke="#232838" stroke-width="0.5"/>
+          <line x1="0" y1="70" x2="520" y2="70" stroke="#232838" stroke-width="0.5"/>
+          <line x1="0" y1="30" x2="520" y2="30" stroke="#232838" stroke-width="0.5"/>
+          <!-- Y labels -->
+          <text x="0" y="153" fill="#6b7280" font-size="10" font-family="DM Mono">0</text>
+          <text x="0" y="113" fill="#6b7280" font-size="10" font-family="DM Mono">1M</text>
+          <text x="0" y="73" fill="#6b7280" font-size="10" font-family="DM Mono">2M</text>
+          <text x="0" y="33" fill="#6b7280" font-size="10" font-family="DM Mono">3M</text>
+          <!-- Bars Q1-Q6 -->
+          <!-- Q3 2024 -->
+          <rect x="30" y="130" width="18" height="20" fill="#4f8ef7" rx="2" opacity="0.8"/>
+          <rect x="50" y="138" width="14" height="12" fill="#6ee7b7" rx="2" opacity="0.7"/>
+          <rect x="50" y="143" width="14" height="7" fill="#f87171" rx="2" opacity="0.6"/>
+          <!-- Q4 2024 -->
+          <rect x="105" y="120" width="18" height="30" fill="#4f8ef7" rx="2" opacity="0.8"/>
+          <rect x="125" y="130" width="14" height="20" fill="#6ee7b7" rx="2" opacity="0.7"/>
+          <rect x="125" y="137" width="14" height="13" fill="#f87171" rx="2" opacity="0.6"/>
+          <!-- Q1 2025 -->
+          <rect x="180" y="108" width="18" height="42" fill="#4f8ef7" rx="2" opacity="0.8"/>
+          <rect x="200" y="120" width="14" height="30" fill="#6ee7b7" rx="2" opacity="0.7"/>
+          <rect x="200" y="130" width="14" height="20" fill="#f87171" rx="2" opacity="0.6"/>
+          <!-- Q2 2025 -->
+          <rect x="255" y="95" width="18" height="55" fill="#4f8ef7" rx="2" opacity="0.8"/>
+          <rect x="275" y="110" width="14" height="40" fill="#6ee7b7" rx="2" opacity="0.7"/>
+          <rect x="275" y="124" width="14" height="26" fill="#f87171" rx="2" opacity="0.6"/>
+          <!-- Q3 2025 -->
+          <rect x="330" y="78" width="18" height="72" fill="#4f8ef7" rx="2" opacity="0.9"/>
+          <rect x="350" y="95" width="14" height="55" fill="#6ee7b7" rx="2" opacity="0.8"/>
+          <rect x="350" y="115" width="14" height="35" fill="#f87171" rx="2" opacity="0.6"/>
+          <!-- Q4 2025 -->
+          <rect x="405" y="62" width="18" height="88" fill="#4f8ef7" rx="2"/>
+          <rect x="425" y="80" width="14" height="70" fill="#6ee7b7" rx="2" opacity="0.9"/>
+          <rect x="425" y="105" width="14" height="45" fill="#f87171" rx="2" opacity="0.65"/>
+          <!-- X Labels -->
+          <text x="35" y="165" fill="#6b7280" font-size="10" font-family="DM Mono" text-anchor="middle">Q3'24</text>
+          <text x="110" y="165" fill="#6b7280" font-size="10" font-family="DM Mono" text-anchor="middle">Q4'24</text>
+          <text x="185" y="165" fill="#6b7280" font-size="10" font-family="DM Mono" text-anchor="middle">Q1'25</text>
+          <text x="260" y="165" fill="#6b7280" font-size="10" font-family="DM Mono" text-anchor="middle">Q2'25</text>
+          <text x="335" y="165" fill="#6b7280" font-size="10" font-family="DM Mono" text-anchor="middle">Q3'25</text>
+          <text x="410" y="165" fill="#6b7280" font-size="10" font-family="DM Mono" text-anchor="middle">Q4'25</text>
+          <!-- Trend line -->
+          <polyline points="35,130 110,120 185,108 260,95 335,78 410,62" fill="none" stroke="#4f8ef7" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+        </svg>
+      </div>
+
+      <!-- SaaS METRICS SNAPSHOT -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">SaaS Health Metrics</div>
+            <div class="chart-subtitle">LTV, CAC, NRR benchmarks</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:4px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:12px;color:var(--muted2);">LTV / CAC Ratio</span>
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--accent2);">3.8x</span>
+            </div>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:76%;background:var(--accent2)"></div></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--font-mono);">Target ≥ 3x · Status: ✓ Healthy</div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:12px;color:var(--muted2);">Net Revenue Retention</span>
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--accent);">108%</span>
+            </div>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:88%;background:var(--accent)"></div></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--font-mono);">Target ≥ 100% · Net expansion positive</div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:12px;color:var(--muted2);">Magic Number (Sales Eff.)</span>
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--warn);">0.72</span>
+            </div>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:72%;background:var(--warn)"></div></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--font-mono);">Target ≥ 0.75 · ⚠ Below threshold</div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:12px;color:var(--muted2);">Gross Margin</span>
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--accent2);">71%</span>
+            </div>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:71%;background:var(--accent2)"></div></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--font-mono);">Target ≥ 65% · Status: ✓ Healthy</div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:12px;color:var(--muted2);">Churn Rate (Monthly)</span>
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--red);">1.8%</span>
+            </div>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:36%;background:var(--red)"></div></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--font-mono);">Target ≤ 1.5% · ⚠ Needs attention</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEAL TABLE -->
+    <div class="data-table">
+      <div class="table-header">
+        <div class="table-title">Open Pipeline — Top Deals by Value</div>
+        <div class="filter-row" style="margin:0">
+          <div class="filter-btn active" onclick="filterDeals(this,'all')">All</div>
+          <div class="filter-btn" onclick="filterDeals(this,'smb')">SMB</div>
+          <div class="filter-btn" onclick="filterDeals(this,'mid')">Mid-Market</div>
+          <div class="filter-btn" onclick="filterDeals(this,'ent')">Enterprise</div>
+        </div>
+      </div>
+      <table id="deal-table">
+        <thead>
+          <tr>
+            <th>Company</th><th>Segment</th><th>ACV</th><th>Stage</th><th>Days in Stage</th><th>Win Prob</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-seg="ent"><td style="color:var(--text);font-weight:500;">Merck KGaA</td><td>Enterprise</td><td style="color:var(--text);font-family:var(--font-mono);">€84,000</td><td>Proposal</td><td>8</td><td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:72%;background:var(--accent2)"></div></div><span style="font-family:var(--font-mono);font-size:12px">72%</span></div></td><td><span class="status-pill status-open">● Open</span></td></tr>
+          <tr data-seg="mid"><td style="color:var(--text);font-weight:500;">Contorion GmbH</td><td>Mid-Market</td><td style="color:var(--text);font-family:var(--font-mono);">€36,000</td><td>Negotiation</td><td>14</td><td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:85%;background:var(--accent2)"></div></div><span style="font-family:var(--font-mono);font-size:12px">85%</span></div></td><td><span class="status-pill status-open">● Open</span></td></tr>
+          <tr data-seg="smb"><td style="color:var(--text);font-weight:500;">FlexOffice AG</td><td>SMB</td><td style="color:var(--text);font-family:var(--font-mono);">€12,400</td><td>Discovery</td><td>3</td><td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:30%;background:var(--warn)"></div></div><span style="font-family:var(--font-mono);font-size:12px">30%</span></div></td><td><span class="status-pill status-nurture">⊙ Nurture</span></td></tr>
+          <tr data-seg="ent"><td style="color:var(--text);font-weight:500;">Siemens Healthineers</td><td>Enterprise</td><td style="color:var(--text);font-family:var(--font-mono);">€120,000</td><td>Legal Review</td><td>21</td><td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:90%;background:var(--accent2)"></div></div><span style="font-family:var(--font-mono);font-size:12px">90%</span></div></td><td><span class="status-pill status-open">● Open</span></td></tr>
+          <tr data-seg="mid"><td style="color:var(--text);font-weight:500;">Taxdoo GmbH</td><td>Mid-Market</td><td style="color:var(--text);font-family:var(--font-mono);">€22,800</td><td>Closed Won</td><td>—</td><td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:100%;background:var(--accent2)"></div></div><span style="font-family:var(--font-mono);font-size:12px">100%</span></div></td><td><span class="status-pill status-won">✓ Won</span></td></tr>
+          <tr data-seg="smb"><td style="color:var(--text);font-weight:500;">Heyflow Inc.</td><td>SMB</td><td style="color:var(--text);font-family:var(--font-mono);">€8,400</td><td>Closed Lost</td><td>—</td><td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:0%;background:var(--red)"></div></div><span style="font-family:var(--font-mono);font-size:12px">0%</span></div></td><td><span class="status-pill status-lost">✗ Lost</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════ FUNNEL ═══════════════ -->
+  <div class="view" id="view-funnel">
+    <div class="section-header">
+      <div class="section-title">Sales Funnel Analysis</div>
+      <div class="section-tag">MQL → SQL → Opportunity → Closed Won</div>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom:24px;">
+      <div class="kpi-card blue"><div class="kpi-label">MQL Volume (Q2)</div><div class="kpi-value">1,240</div><div class="kpi-sub"><span class="kpi-delta-up">↑ 18%</span><span class="kpi-context">QoQ</span></div></div>
+      <div class="kpi-card green"><div class="kpi-label">MQL→SQL Rate</div><div class="kpi-value">28%</div><div class="kpi-sub"><span class="kpi-delta-up">↑ 4pp</span><span class="kpi-context">vs Q1</span></div></div>
+      <div class="kpi-card orange"><div class="kpi-label">Avg. Sales Cycle</div><div class="kpi-value">42d</div><div class="kpi-sub"><span class="kpi-delta-up">↓ 8d</span><span class="kpi-context">faster closes</span></div></div>
+      <div class="kpi-card purple"><div class="kpi-label">Opp → Won Rate</div><div class="kpi-value">34%</div><div class="kpi-sub"><span class="kpi-delta-up">↑ 6pp</span><span class="kpi-context">vs Q4 2025</span></div></div>
+    </div>
+
+    <!-- Funnel visual -->
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-header">
+        <div><div class="chart-title">Conversion Funnel — Q2 2026</div><div class="chart-subtitle">Stage-by-stage drop-off analysis</div></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Volume</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Drop-off</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 700 260" class="chart-svg">
+        <!-- Stage bars with funnel shape -->
+        <defs>
+          <linearGradient id="fgBlue" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#4f8ef7" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#4f8ef7" stop-opacity="0.6"/>
+          </linearGradient>
+          <linearGradient id="fgGreen" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#6ee7b7" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#6ee7b7" stop-opacity="0.6"/>
+          </linearGradient>
+          <linearGradient id="fgOrange" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#fb923c" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#fb923c" stop-opacity="0.6"/>
+          </linearGradient>
+          <linearGradient id="fgPurple" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.6"/>
+          </linearGradient>
+        </defs>
+        <!-- MQL bar (full width) -->
+        <rect x="20" y="20" width="660" height="40" fill="url(#fgBlue)" rx="4"/>
+        <text x="30" y="36" fill="white" font-size="12" font-family="DM Mono" font-weight="500">MQL</text>
+        <text x="30" y="51" fill="rgba(255,255,255,0.7)" font-size="11" font-family="DM Mono">1,240 leads</text>
+        <text x="660" y="45" fill="white" font-size="13" font-family="DM Mono" text-anchor="end" font-weight="500">100%</text>
+
+        <!-- SQL bar (28%) -->
+        <rect x="20" y="80" width="370" height="40" fill="url(#fgGreen)" rx="4"/>
+        <rect x="390" y="80" width="290" height="40" fill="rgba(248,113,113,0.12)" rx="4" stroke="#f87171" stroke-width="0.5"/>
+        <text x="30" y="96" fill="white" font-size="12" font-family="DM Mono" font-weight="500">SQL</text>
+        <text x="30" y="111" fill="rgba(255,255,255,0.7)" font-size="11" font-family="DM Mono">347 leads</text>
+        <text x="360" y="105" fill="#6ee7b7" font-size="13" font-family="DM Mono" text-anchor="end" font-weight="500">28%</text>
+        <text x="535" y="105" fill="#f87171" font-size="11" font-family="DM Mono" text-anchor="middle">893 dropped</text>
+
+        <!-- Opportunity bar (18%) -->
+        <rect x="20" y="140" width="238" height="40" fill="url(#fgOrange)" rx="4"/>
+        <rect x="258" y="140" width="422" height="40" fill="rgba(248,113,113,0.08)" rx="4" stroke="#f87171" stroke-width="0.5"/>
+        <text x="30" y="156" fill="white" font-size="12" font-family="DM Mono" font-weight="500">Opportunity</text>
+        <text x="30" y="171" fill="rgba(255,255,255,0.7)" font-size="11" font-family="DM Mono">224 deals</text>
+        <text x="228" y="165" fill="#fb923c" font-size="13" font-family="DM Mono" text-anchor="end" font-weight="500">18%</text>
+        <text x="460" y="165" fill="#f87171" font-size="11" font-family="DM Mono" text-anchor="middle">123 not qualified</text>
+
+        <!-- Won bar (34% of opp = ~6%) -->
+        <rect x="20" y="200" width="80" height="40" fill="url(#fgPurple)" rx="4"/>
+        <rect x="100" y="200" width="580" height="40" fill="rgba(248,113,113,0.06)" rx="4" stroke="#f87171" stroke-width="0.5"/>
+        <text x="30" y="216" fill="white" font-size="12" font-family="DM Mono" font-weight="500">Closed Won</text>
+        <text x="30" y="231" fill="rgba(255,255,255,0.7)" font-size="11" font-family="DM Mono">76 deals</text>
+        <text x="70" y="225" fill="#a78bfa" font-size="13" font-family="DM Mono" text-anchor="end" font-weight="500">34%</text>
+        <text x="400" y="225" fill="#f87171" font-size="11" font-family="DM Mono" text-anchor="middle">148 lost · Win rate from total MQL: 6.1%</text>
+      </svg>
+    </div>
+
+    <!-- Bottleneck analysis -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Win/Loss Analysis by Reason</div><div class="chart-subtitle">Closed deals this quarter</div></div>
+        </div>
+        <svg viewBox="0 0 420 200" class="chart-svg">
+          <!-- Win reasons -->
+          <text x="0" y="20" fill="#6ee7b7" font-size="11" font-family="DM Mono">WON REASONS</text>
+          <rect x="0" y="30" width="180" height="14" fill="rgba(110,231,183,0.3)" rx="2"/>
+          <text x="4" y="41" fill="#6ee7b7" font-size="10" font-family="DM Mono">Product fit  47%</text>
+          <rect x="0" y="50" width="120" height="14" fill="rgba(110,231,183,0.2)" rx="2"/>
+          <text x="4" y="61" fill="#6ee7b7" font-size="10" font-family="DM Mono">Pricing  31%</text>
+          <rect x="0" y="70" width="72" height="14" fill="rgba(110,231,183,0.15)" rx="2"/>
+          <text x="4" y="81" fill="#6ee7b7" font-size="10" font-family="DM Mono">Champion  19%</text>
+          <rect x="0" y="90" width="12" height="14" fill="rgba(110,231,183,0.1)" rx="2"/>
+          <text x="4" y="101" fill="#6ee7b7" font-size="10" font-family="DM Mono">Other  3%</text>
+
+          <!-- Divider -->
+          <line x1="210" y1="15" x2="210" y2="150" stroke="#232838" stroke-width="1"/>
+
+          <!-- Loss reasons -->
+          <text x="220" y="20" fill="#f87171" font-size="11" font-family="DM Mono">LOST REASONS</text>
+          <rect x="220" y="30" width="150" height="14" fill="rgba(248,113,113,0.25)" rx="2"/>
+          <text x="224" y="41" fill="#f87171" font-size="10" font-family="DM Mono">Lost to competitor  39%</text>
+          <rect x="220" y="50" width="110" height="14" fill="rgba(248,113,113,0.18)" rx="2"/>
+          <text x="224" y="61" fill="#f87171" font-size="10" font-family="DM Mono">Budget  29%</text>
+          <rect x="220" y="70" width="72" height="14" fill="rgba(248,113,113,0.12)" rx="2"/>
+          <text x="224" y="81" fill="#f87171" font-size="10" font-family="DM Mono">No decision  19%</text>
+          <rect x="220" y="90" width="50" height="14" fill="rgba(248,113,113,0.08)" rx="2"/>
+          <text x="224" y="101" fill="#f87171" font-size="10" font-family="DM Mono">Timeline  13%</text>
+
+          <!-- Insight box -->
+          <rect x="0" y="130" width="420" height="50" fill="rgba(79,142,247,0.06)" rx="4" stroke="rgba(79,142,247,0.2)" stroke-width="1"/>
+          <text x="10" y="150" fill="#4f8ef7" font-size="10" font-family="DM Mono">→ INSIGHT:</text>
+          <text x="10" y="166" fill="#9ca3af" font-size="10" font-family="DM Mono">"Lost to competitor" up 12pp QoQ — recommend competitive battlecard refresh in Q3</text>
+        </svg>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Pipeline by Stage</div><div class="chart-subtitle">Current open €-value</div></div>
+        </div>
+        <svg viewBox="0 0 240 200" class="chart-svg">
+          <!-- Horizontal bars -->
+          <text x="0" y="18" fill="#9ca3af" font-size="10" font-family="DM Mono">Discovery</text>
+          <rect x="0" y="24" width="96" height="12" fill="#4f8ef7" rx="2" opacity="0.8"/>
+          <text x="100" y="34" fill="#4f8ef7" font-size="10" font-family="DM Mono">€340K</text>
+
+          <text x="0" y="56" fill="#9ca3af" font-size="10" font-family="DM Mono">Qualification</text>
+          <rect x="0" y="62" width="148" height="12" fill="#4f8ef7" rx="2" opacity="0.85"/>
+          <text x="152" y="72" fill="#4f8ef7" font-size="10" font-family="DM Mono">€520K</text>
+
+          <text x="0" y="94" fill="#9ca3af" font-size="10" font-family="DM Mono">Proposal</text>
+          <rect x="0" y="100" width="200" height="12" fill="#6ee7b7" rx="2" opacity="0.8"/>
+          <text x="204" y="110" fill="#6ee7b7" font-size="10" font-family="DM Mono">€710K</text>
+
+          <text x="0" y="132" fill="#9ca3af" font-size="10" font-family="DM Mono">Negotiation</text>
+          <rect x="0" y="138" width="160" height="12" fill="#fb923c" rx="2" opacity="0.85"/>
+          <text x="164" y="148" fill="#fb923c" font-size="10" font-family="DM Mono">€568K</text>
+
+          <text x="0" y="170" fill="#9ca3af" font-size="10" font-family="DM Mono">Legal / Closing</text>
+          <rect x="0" y="176" width="104" height="12" fill="#a78bfa" rx="2" opacity="0.9"/>
+          <text x="108" y="186" fill="#a78bfa" font-size="10" font-family="DM Mono">€368K</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ARR & COHORTS ═══════════════ -->
+  <div class="view" id="view-arr">
+    <div class="section-header">
+      <div class="section-title">ARR Waterfall & Cohort Retention</div>
+      <div class="section-tag">Revenue reconciliation · NRR tracking</div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-header">
+        <div><div class="chart-title">ARR Waterfall — Q2 2026</div><div class="chart-subtitle">Beginning ARR → Ending ARR</div></div>
+      </div>
+      <div style="padding-top:8px;">
+        <div class="waterfall-row">
+          <div class="wf-label">Beginning ARR</div>
+          <div class="wf-bar-wrap"><div class="wf-seg" style="width:280px;background:#4f8ef7;opacity:0.9"></div></div>
+          <div class="wf-value" style="color:#4f8ef7">€3.41M</div>
+        </div>
+        <div class="waterfall-row">
+          <div class="wf-label">+ New Business</div>
+          <div class="wf-bar-wrap"><div style="width:80px"></div><div class="wf-seg" style="width:96px;background:#6ee7b7;opacity:0.85"></div></div>
+          <div class="wf-value" style="color:#6ee7b7">+€460K</div>
+        </div>
+        <div class="waterfall-row">
+          <div class="wf-label">+ Expansion</div>
+          <div class="wf-bar-wrap"><div style="width:80px"></div><div class="wf-seg" style="width:60px;background:#6ee7b7;opacity:0.6"></div></div>
+          <div class="wf-value" style="color:#6ee7b7">+€290K</div>
+        </div>
+        <div class="waterfall-row">
+          <div class="wf-label">− Churn</div>
+          <div class="wf-bar-wrap"><div style="width:80px"></div><div class="wf-seg" style="width:32px;background:#f87171;opacity:0.8"></div></div>
+          <div class="wf-value" style="color:#f87171">−€154K</div>
+        </div>
+        <div class="waterfall-row">
+          <div class="wf-label">− Contraction</div>
+          <div class="wf-bar-wrap"><div style="width:80px"></div><div class="wf-seg" style="width:14px;background:#f87171;opacity:0.5"></div></div>
+          <div class="wf-value" style="color:#f87171">−€68K</div>
+        </div>
+        <div style="border-top:1px solid var(--border);margin:8px 0;"></div>
+        <div class="waterfall-row">
+          <div class="wf-label" style="color:var(--text);font-weight:500;">Ending ARR</div>
+          <div class="wf-bar-wrap"><div class="wf-seg" style="width:336px;background:linear-gradient(90deg,#4f8ef7,#6ee7b7);opacity:1"></div></div>
+          <div class="wf-value" style="color:var(--text);font-weight:600;">€3.94M</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cohort retention table -->
+    <div class="data-table">
+      <div class="table-header">
+        <div class="table-title">Cohort Retention Heatmap</div>
+        <div style="font-size:12px;color:var(--muted);font-family:var(--font-mono);">% customers retained by cohort month</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Cohort</th><th>M0</th><th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>M5</th><th>M6</th><th>M9</th><th>M12</th>
+          </tr>
+        </thead>
+        <tbody id="cohort-body">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SCENARIO PLANNER ═══════════════ -->
+  <div class="view" id="view-scenario">
+    <div class="section-header">
+      <div class="section-title">GTM Scenario Planner</div>
+      <div class="section-tag">Quota modelling · ARR forecasting · Sales capacity planning</div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-header">
+        <div><div class="chart-title">Adjust Inputs — Forecast ARR Impact</div><div class="chart-subtitle">Drag sliders or type values to model different GTM scenarios</div></div>
+      </div>
+      <div class="scenario-inputs">
+        <div class="input-group">
+          <div class="input-label">MQL Volume (monthly)</div>
+          <div class="input-wrap"><span class="input-prefix">#</span><input class="styled-input" id="inp-mql" type="number" value="420" oninput="recalc()"/></div>
+          <input type="range" class="styled-input" min="100" max="2000" value="420" oninput="document.getElementById('inp-mql').value=this.value;recalc()"/>
+        </div>
+        <div class="input-group">
+          <div class="input-label">MQL → SQL Rate</div>
+          <div class="input-wrap"><span class="input-prefix">%</span><input class="styled-input" id="inp-sql-rate" type="number" value="28" oninput="recalc()"/></div>
+          <input type="range" class="styled-input" min="5" max="60" value="28" oninput="document.getElementById('inp-sql-rate').value=this.value;recalc()"/>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Win Rate</div>
+          <div class="input-wrap"><span class="input-prefix">%</span><input class="styled-input" id="inp-win" type="number" value="34" oninput="recalc()"/></div>
+          <input type="range" class="styled-input" min="5" max="80" value="34" oninput="document.getElementById('inp-win').value=this.value;recalc()"/>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Avg. Contract Value (€)</div>
+          <div class="input-wrap"><span class="input-prefix">€</span><input class="styled-input" id="inp-acv" type="number" value="18400" oninput="recalc()"/></div>
+          <input type="range" class="styled-input" min="1000" max="100000" value="18400" oninput="document.getElementById('inp-acv').value=this.value;recalc()"/>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Opp → Proposal Rate</div>
+          <div class="input-wrap"><span class="input-prefix">%</span><input class="styled-input" id="inp-prop" type="number" value="65" oninput="recalc()"/></div>
+          <input type="range" class="styled-input" min="10" max="95" value="65" oninput="document.getElementById('inp-prop').value=this.value;recalc()"/>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Monthly Churn Rate</div>
+          <div class="input-wrap"><span class="input-prefix">%</span><input class="styled-input" id="inp-churn" type="number" value="1.8" step="0.1" oninput="recalc()"/></div>
+          <input type="range" class="styled-input" min="0.1" max="10" step="0.1" value="1.8" oninput="document.getElementById('inp-churn').value=this.value;recalc()"/>
+        </div>
+      </div>
+      <div class="scenario-results">
+        <div class="scenario-result-card">
+          <div class="sr-label">Monthly Closed Deals</div>
+          <div class="sr-value" id="res-deals">40</div>
+          <div class="sr-sub">from current MQL pool</div>
+        </div>
+        <div class="scenario-result-card">
+          <div class="sr-label">Monthly New ARR</div>
+          <div class="sr-value" id="res-arr">€737K</div>
+          <div class="sr-sub">new business only</div>
+        </div>
+        <div class="scenario-result-card">
+          <div class="sr-label">Projected Annual ARR</div>
+          <div class="sr-value" id="res-annual">€5.9M</div>
+          <div class="sr-sub">run-rate ex. expansion</div>
+        </div>
+        <div class="scenario-result-card">
+          <div class="sr-label">Pipeline Velocity / Day</div>
+          <div class="sr-value" id="res-velocity">€24.6K</div>
+          <div class="sr-sub">at 42d avg sales cycle</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="methodology-card">
+      <div class="methodology-title">Methodology & Data Model</div>
+      <ul class="methodology-list">
+        <li>Pipeline Velocity = (# Opps × Win Rate × ACV) ÷ Sales Cycle Length</li>
+        <li>CAC = Total Sales & Marketing Spend ÷ New Customers Acquired</li>
+        <li>LTV = (ACV ÷ Monthly Churn) × Gross Margin %</li>
+        <li>Magic Number = Net New ARR × 4 ÷ Prior Quarter S&M Spend</li>
+        <li>NRR = (Begin ARR + Expansion − Contraction − Churn) ÷ Begin ARR</li>
+        <li>ARR Waterfall: New + Expansion − Churn − Contraction = Net New ARR</li>
+        <li>Funnel conversion modeled across 500+ simulated B2B contact records</li>
+        <li>Cohort retention based on SaaS benchmark data (OpenView 2025 report)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ GTM PROGRAMS ═══════════════ -->
+  <div class="view" id="view-programs">
+    <div class="section-header">
+      <div class="section-title">GTM Program Tracker</div>
+      <div class="section-tag">Sales plays · Product launches · Incentive programs</div>
+    </div>
+
+    <div class="data-table" style="margin-bottom:20px;">
+      <div class="table-header">
+        <div class="table-title">Active Sales Programs</div>
+        <span class="badge badge-blue">5 Active</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Program</th><th>Type</th><th>Owner</th><th>Target</th><th>Progress</th><th>Pipeline Impact</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--text);font-weight:500;">SMB Spring Outbound</td>
+            <td>Sales Play</td><td>AEs – SMB</td><td>120 SQLs</td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:74%;background:var(--accent2)"></div></div><span style="font-family:var(--font-mono);font-size:12px">89 / 120</span></div></td>
+            <td style="font-family:var(--font-mono);color:var(--accent2)">€312K</td>
+            <td><span class="status-pill status-open">● On Track</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text);font-weight:500;">Enterprise Expansion Play</td>
+            <td>Upsell</td><td>AEs – ENT</td><td>€200K NRR</td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:55%;background:var(--warn)"></div></div><span style="font-family:var(--font-mono);font-size:12px">55%</span></div></td>
+            <td style="font-family:var(--font-mono);color:var(--warn)">€110K</td>
+            <td><span class="status-pill status-nurture">⚠ At Risk</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text);font-weight:500;">Payroll Module Launch</td>
+            <td>Product Launch</td><td>RevOps + PMM</td><td>40 pilots</td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:90%;background:var(--accent2)"></div></div><span style="font-family:var(--font-mono);font-size:12px">36 / 40</span></div></td>
+            <td style="font-family:var(--font-mono);color:var(--accent2)">€84K</td>
+            <td><span class="status-pill status-won">✓ Ahead</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text);font-weight:500;">Q2 SPIFFs – Renewal</td>
+            <td>Incentive</td><td>CS + AEs</td><td>92% NRR</td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:80%;background:var(--accent)"></div></div><span style="font-family:var(--font-mono);font-size:12px">80%</span></div></td>
+            <td style="font-family:var(--font-mono);color:var(--accent)">€220K ARR saved</td>
+            <td><span class="status-pill status-open">● On Track</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text);font-weight:500;">Competitive Displacement</td>
+            <td>Sales Play</td><td>Senior AEs</td><td>15 deals</td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:27%;background:var(--red)"></div></div><span style="font-family:var(--font-mono);font-size:12px">4 / 15</span></div></td>
+            <td style="font-family:var(--font-mono);color:var(--red)">€72K</td>
+            <td><span class="status-pill status-lost">✗ Off Track</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Competitive benchmarking -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Competitive Benchmarking</div><div class="chart-subtitle">Win rate vs key competitors — last 90 days</div></div>
+      </div>
+      <svg viewBox="0 0 640 200" class="chart-svg">
+        <!-- vs Competitor A -->
+        <text x="0" y="22" fill="#9ca3af" font-size="12" font-family="DM Sans">vs. HiBob</text>
+        <rect x="100" y="10" width="195" height="18" fill="rgba(110,231,183,0.3)" rx="3"/>
+        <text x="105" y="23" fill="#6ee7b7" font-size="11" font-family="DM Mono">Won 65%</text>
+        <rect x="295" y="10" width="105" height="18" fill="rgba(248,113,113,0.2)" rx="3"/>
+        <text x="300" y="23" fill="#f87171" font-size="11" font-family="DM Mono">Lost 35%</text>
+
+        <text x="0" y="60" fill="#9ca3af" font-size="12" font-family="DM Sans">vs. Sage HR</text>
+        <rect x="100" y="48" width="225" height="18" fill="rgba(110,231,183,0.3)" rx="3"/>
+        <text x="105" y="61" fill="#6ee7b7" font-size="11" font-family="DM Mono">Won 75%</text>
+        <rect x="325" y="48" width="75" height="18" fill="rgba(248,113,113,0.2)" rx="3"/>
+        <text x="330" y="61" fill="#f87171" font-size="11" font-family="DM Mono">Lost 25%</text>
+
+        <text x="0" y="98" fill="#9ca3af" font-size="12" font-family="DM Sans">vs. Factorial</text>
+        <rect x="100" y="86" width="165" height="18" fill="rgba(110,231,183,0.3)" rx="3"/>
+        <text x="105" y="99" fill="#6ee7b7" font-size="11" font-family="DM Mono">Won 55%</text>
+        <rect x="265" y="86" width="135" height="18" fill="rgba(248,113,113,0.2)" rx="3"/>
+        <text x="270" y="99" fill="#f87171" font-size="11" font-family="DM Mono">Lost 45%</text>
+
+        <text x="0" y="136" fill="#9ca3af" font-size="12" font-family="DM Sans">vs. Bamboo</text>
+        <rect x="100" y="124" width="132" height="18" fill="rgba(110,231,183,0.25)" rx="3"/>
+        <text x="105" y="137" fill="#6ee7b7" font-size="11" font-family="DM Mono">Won 44%</text>
+        <rect x="232" y="124" width="168" height="18" fill="rgba(248,113,113,0.25)" rx="3"/>
+        <text x="237" y="137" fill="#f87171" font-size="11" font-family="DM Mono">Lost 56% ← ⚠ gap</text>
+
+        <rect x="0" y="162" width="640" height="32" fill="rgba(79,142,247,0.05)" rx="4" stroke="rgba(79,142,247,0.15)" stroke-width="1"/>
+        <text x="10" y="179" fill="#4f8ef7" font-size="11" font-family="DM Mono">→ Recommendation: BambooHR displacement needs updated battlecard + pricing authority for AEs</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PROCESS PLAYBOOKS ═══════════════ -->
+  <div class="view" id="view-process">
+    <div class="section-header">
+      <div class="section-title">RevOps Process Playbooks</div>
+      <div class="section-tag">Workflows · Documentation · Operational templates</div>
+    </div>
+
+    <div class="process-grid">
+      <!-- Playbook 1 -->
+      <div class="process-card">
+        <div class="process-card-title">◈ Lead Qualification Playbook</div>
+        <div class="process-step">
+          <div class="step-num">1</div>
+          <div class="step-body"><div class="step-name">Inbound Lead Capture</div><div class="step-desc">All inbound MQLs scored via BANT (Budget, Authority, Need, Timing). Threshold ≥ 60 pts to pass to Sales.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">2</div>
+          <div class="step-body"><div class="step-name">SDR Outreach (SLA: 4h)</div><div class="step-desc">SDR contacts within 4 hours. Discovery call booked or lead recycled to nurture sequence.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">3</div>
+          <div class="step-body"><div class="step-name">SQL Handoff to AE</div><div class="step-desc">Formal SQL handoff in Salesforce with completed MEDDIC fields. No SQL created without all mandatory fields.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">4</div>
+          <div class="step-body"><div class="step-name">Opportunity Creation + Forecast</div><div class="step-desc">AE creates Opportunity, sets stage, weighted ARR, and expected close date within 24h of handoff.</div></div>
+        </div>
+      </div>
+
+      <!-- Playbook 2 -->
+      <div class="process-card">
+        <div class="process-card-title">◇ Revenue Review Cadence</div>
+        <div class="process-step">
+          <div class="step-num">W</div>
+          <div class="step-body"><div class="step-name">Weekly Pipeline Review</div><div class="step-desc">Every Monday: pipeline delta, stage movements, deals at risk. RevOps provides CRO with 1-page digest.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">M</div>
+          <div class="step-body"><div class="step-name">Monthly Business Review</div><div class="step-desc">Win rate, funnel conversion, ARR vs. target, CAC trends. Presented to VP Sales + CFO.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">Q</div>
+          <div class="step-body"><div class="step-name">Quarterly RevOps Audit</div><div class="step-desc">Full data audit: Salesforce hygiene, duplicate contacts, stage definition compliance, forecast accuracy assessment.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">Q</div>
+          <div class="step-body"><div class="step-name">GTM Strategy Planning</div><div class="step-desc">Quota allocation, territory design, headcount modelling, next-quarter program roadmap set with Sales VPs.</div></div>
+        </div>
+      </div>
+
+      <!-- Playbook 3 -->
+      <div class="process-card">
+        <div class="process-card-title">⊹ Data Audit SOP</div>
+        <div class="process-step">
+          <div class="step-num">1</div>
+          <div class="step-body"><div class="step-name">Pull Salesforce Data Export</div><div class="step-desc">Weekly export of all Opportunities, Contacts, Accounts with last-modified date and owner fields.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">2</div>
+          <div class="step-body"><div class="step-name">Duplicate Detection</div><div class="step-desc">Run dedup check on email + company name + domain. Flag records with >85% similarity score for review.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">3</div>
+          <div class="step-body"><div class="step-name">Mandatory Field Compliance</div><div class="step-desc">Check all Opportunities for: stage, ACV, close date, lead source, and MEDDIC fields. Flag non-compliant to AE manager.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">4</div>
+          <div class="step-body"><div class="step-name">Publish Audit Report</div><div class="step-desc">Share data quality score (%) with Sales Ops and CRO via dashboard. Target: ≥95% field completion rate.</div></div>
+        </div>
+      </div>
+
+      <!-- Playbook 4 -->
+      <div class="process-card">
+        <div class="process-card-title">⊞ Sales Program Launch SOP</div>
+        <div class="process-step">
+          <div class="step-num">1</div>
+          <div class="step-body"><div class="step-name">Define Program Goals & Metrics</div><div class="step-desc">Set measurable KPIs: # SQLs, ARR impact, win rate lift. Align with VP Sales on success criteria pre-launch.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">2</div>
+          <div class="step-body"><div class="step-name">Build Enablement Materials</div><div class="step-desc">Battlecards, email templates, objection handlers, call scripts. Reviewed by Product Marketing before release.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">3</div>
+          <div class="step-body"><div class="step-name">Train + Certify AEs</div><div class="step-desc">Live training + async Loom walkthrough. AEs complete quiz before going live with new play.</div></div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">4</div>
+          <div class="step-body"><div class="step-name">Track, Iterate, Report</div><div class="step-desc">Weekly measurement vs. targets in RevOps tracker. Mid-program adjustment if 2 consecutive weeks below 60% pace.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── NAV ──
+function switchNav(el, view) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  switchView(view);
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.classList.toggle('active', t.getAttribute('onclick').includes("'"+view+"'"));
+  });
+}
+
+function switchTab(el, view) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  switchView(view);
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    n.classList.toggle('active', n.getAttribute('onclick').includes("'"+view+"'"));
+  });
+}
+
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  if(view==='arr') buildCohort();
+}
+
+// ── FILTER DEALS ──
+function filterDeals(btn, seg) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#deal-table tbody tr').forEach(row=>{
+    row.style.display = (seg==='all' || row.dataset.seg===seg) ? '' : 'none';
+  });
+}
+
+// ── SCENARIO CALC ──
+function recalc() {
+  const mql = +document.getElementById('inp-mql').value || 1;
+  const sqlRate = +document.getElementById('inp-sql-rate').value/100 || 0;
+  const winRate = +document.getElementById('inp-win').value/100 || 0;
+  const acv = +document.getElementById('inp-acv').value || 1;
+  const propRate = +document.getElementById('inp-prop').value/100 || 0;
+  const churn = +document.getElementById('inp-churn').value/100 || 0;
+
+  const sqls = mql * sqlRate;
+  const opps = sqls * propRate;
+  const closed = Math.round(opps * winRate);
+  const monthlyArr = closed * acv;
+  const annualArr = monthlyArr * 12 * (1 - churn*12*0.5);
+  const velocity = (opps * winRate * acv) / 42;
+
+  document.getElementById('res-deals').textContent = closed;
+  document.getElementById('res-arr').textContent = '€'+fmt(monthlyArr);
+  document.getElementById('res-annual').textContent = '€'+fmt(annualArr);
+  document.getElementById('res-velocity').textContent = '€'+fmt(velocity);
+}
+
+function fmt(n) {
+  if(n>=1000000) return (n/1000000).toFixed(1)+'M';
+  if(n>=1000) return (n/1000).toFixed(0)+'K';
+  return Math.round(n).toLocaleString();
+}
+
+// ── COHORT TABLE ──
+function buildCohort() {
+  const cohorts = [
+    { name:'Q3 2024', vals:[100,88,79,72,66,61,58,52,47] },
+    { name:'Q4 2024', vals:[100,90,82,75,70,65,62,56,null] },
+    { name:'Q1 2025', vals:[100,91,84,77,71,67,64,null,null] },
+    { name:'Q2 2025', vals:[100,92,85,79,73,69,null,null,null] },
+    { name:'Q3 2025', vals:[100,93,86,80,75,null,null,null,null] },
+    { name:'Q4 2025', vals:[100,94,87,82,null,null,null,null,null] },
+    { name:'Q1 2026', vals:[100,94,null,null,null,null,null,null,null] },
+  ];
+  const body = document.getElementById('cohort-body');
+  body.innerHTML = '';
+  cohorts.forEach(c=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="color:var(--text);font-family:var(--font-mono)">${c.name}</td>`+
+      c.vals.map(v=>{
+        if(v===null) return `<td style="color:var(--border)">—</td>`;
+        const r = v>=90?'6ee7b7':v>=75?'4f8ef7':v>=60?'fb923c':'f87171';
+        return `<td style="color:#${r};font-family:var(--font-mono);font-weight:500">${v}%</td>`;
+      }).join('');
+    body.appendChild(tr);
+  });
+}
+
+// Init
+recalc();
+</script>
+</body>
+</html>
